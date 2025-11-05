@@ -1,6 +1,21 @@
 {
+    // Cấu hình chung cho VS Code (giữ nguyên)
     "iis.configDir": "",
+
+    // Cấu hình CMake Tools (giữ nguyên và bổ sung)
     "cmake.sourceDirectory": "D:/PROJECT/PLATFORM/STM32_template",
     "cmake.useCMakePresets": "always",
-    "cmake.preset": "Debug"
+    "cmake.preset": "Debug",
+    "cmake.buildDirectory": "${workspaceFolder}/build/Debug",
+
+    // Cấu hình Cortex-Debug cho ST-Link/OpenOCD (thêm để fix lỗi debug)
+    "cortex-debug.openocdPath": "D:/PROJECT/PLATFORM/OpenOCD/bin/openocd.exe",  // Thay bằng path OpenOCD của bạn
+    "cortex-debug.armToolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/bin",
+    "cortex-debug.openocdEnv": {
+        "OPENOCD_SCRIPTS": "D:/PROJECT/PLATFORM/OpenOCD/share/openocd/scripts"  // Thay bằng path scripts OpenOCD
+    },
+    "cortex-debug.showDevDebugOutput": "raw"  // Hiển thị log chi tiết OpenOCD
+
+    // Optional: Tắt warning không cần thiết (thêm nếu log ồn ào)
+    // "cmake.configureOnOpen": false
 }

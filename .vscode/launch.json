@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "STM32H7 Debug (OpenOCD)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/Debug/firmware.elf",   // đổi đúng tên/đường dẫn .elf của preset Debug
+      "device": "STM32H743ZI",                                   // ĐỔI ĐÚNG part của bạn
+      "configFiles": [
+        "${workspaceFolder}/openocd_f7.cfg"
+      ],
+      "serverpath": "D:\\PROJECT\\PLATFORM\\OpenOCD\\openocd\\bin\\openocd.exe",
+      "preLaunchTask": "CMake: build",
+      "runToEntryPoint": "main",
+      "svdFile": "${workspaceFolder}/ide_gen/svd/STM32F746.svd",        // tùy chọn: bỏ nếu chưa có
+      "postRestartSessionCommands": [ "monitor reset halt" ],
+      "armToolchainPath": "",                                    // để trống nếu arm-none-eabi-* đã có trong PATH
+      "interface": "swd",
+      "showDevDebugOutput": "none"
+    }
+  ]
+}
