@@ -14,7 +14,10 @@
     "cortex-debug.openocdEnv": {
         "OPENOCD_SCRIPTS": "D:/PROJECT/PLATFORM/OpenOCD/share/openocd/scripts"  // Thay bằng path scripts OpenOCD
     },
-    "cortex-debug.showDevDebugOutput": "raw"  // Hiển thị log chi tiết OpenOCD
+    "cortex-debug.showDevDebugOutput": "raw",
+    "files.associations": {
+        "stdio.h": "c"
+    } // Hiển thị log chi tiết OpenOCD
 
     // Optional: Tắt warning không cần thiết (thêm nếu log ồn ào)
     // "cmake.configureOnOpen": false
