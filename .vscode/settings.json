@@ -16,9 +16,21 @@
     },
     "cortex-debug.showDevDebugOutput": "raw",
     "files.associations": {
-        "stdio.h": "c"
-    } // Hiển thị log chi tiết OpenOCD
+        "stdio.h": "c",
+        "unity.h": "c"
+    }, // Hiển thị log chi tiết OpenOCD
 
-    // Optional: Tắt warning không cần thiết (thêm nếu log ồn ào)
-    // "cmake.configureOnOpen": false
+"terminal.integrated.profiles.windows": {
+    "msys mingw64": {
+        "path": "C:/msys64/msys2_shell.cmd",
+        "args": [
+            "-defterm",
+            "-here",
+            "-no-start",
+            "-mingw64"
+        ],
+        "icon": "terminal-bash"
+    }
+},
+"terminal.integrated.defaultProfile.windows": "msys mingw64"
 }

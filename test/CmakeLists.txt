@@ -1,0 +1,48 @@
+# CMake cho tests (host-based, dùng GCC/Clang)
+cmake_minimum_required(VERSION 3.20)
+
+if(CMAKE_CROSSCOMPILING)
+    set(CMAKE_C_COMPILER ${MINGW_PATH})
+    enable_language(C)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    message(STATUS "Using host GCC: ${CMAKE_C_COMPILER}")
+endif()
+
+# Build Unity như static library (nếu chưa có target 'unity')
+if(NOT TARGET unity)
+    add_library(unity STATIC
+        ${CMAKE_SOURCE_DIR}/tools/Unity/src/unity.c
+    )
+    target_include_directories(unity PUBLIC ${CMAKE_SOURCE_DIR}/tools/Unity/src)
+    target_compile_options(unity PRIVATE -Wall -g)
+endif()
+
+# Tạo executable cho tests
+add_executable(tests
+    test_runner.c  # Main Unity runner (gọi RUN_TEST_GROUP)
+    # Thêm file test khác: test_temp_module.c, test_hal_mock.c, etc.
+    # Nếu cần source từ src: ../src/M0_SysApp/temp_module.c (không include hardware-dependent code)
+)
+
+# Include paths
+target_include_directories(tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/tools/Unity/src  # Unity headers
+    ${CMAKE_SOURCE_DIR}/src/M0_SysApp      # Headers từ app thực tế
+    ${CMAKE_CURRENT_SOURCE_DIR}            # Cho test files
+)
+
+# Link Unity library (static)
+target_link_libraries(tests PRIVATE unity)
+
+# Compiler options cho host (debug-friendly)
+target_compile_options(tests PRIVATE -Wall -Wextra -g -O0)
+
+# Đăng ký test với CTest
+add_test(NAME unit_tests COMMAND tests)
+
+# Set properties: Chạy với verbose output từ Unity
+set_tests_properties(unit_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)

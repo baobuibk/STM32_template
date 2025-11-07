@@ -42,7 +42,13 @@ foreach(_f IN LISTS FORMAT_SOURCES)
 endforeach()
 
 # Tạo target format_m0_sysapp
-add_custom_target(format_m0_sysapp
+add_custom_target(clang_format
   COMMAND "${CMAKE_COMMAND}" -P "${FORMAT_SCRIPT}"
-  COMMENT "Running clang-format on M0_SysApp"
+  COMMENT "Running clang-format "
 )
+
+# Enable testing với CTest
+enable_testing()
+
+# Thêm subdirectory cho folder test
+add_subdirectory(test)
