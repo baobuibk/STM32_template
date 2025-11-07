@@ -17,7 +17,9 @@
     "cortex-debug.showDevDebugOutput": "raw",
     "files.associations": {
         "stdio.h": "c",
-        "unity.h": "c"
+        "unity.h": "c",
+        "unity_config.h": "c",
+        "productioncode.h": "c"
     }, // Hiển thị log chi tiết OpenOCD
 
 "terminal.integrated.profiles.windows": {
