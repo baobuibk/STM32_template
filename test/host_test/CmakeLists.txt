@@ -1,0 +1,63 @@
+# CMake cho tests (host-based, dùng GCC/Clang)
+cmake_minimum_required(VERSION 3.20)
+
+if(CMAKE_CROSSCOMPILING)
+    set(CMAKE_C_COMPILER ${MINGW_PATH})
+    enable_language(C)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    message(STATUS "Using host GCC: ${CMAKE_C_COMPILER}")
+endif()
+
+# # Build Unity như static library (nếu chưa có target 'unity')
+if(NOT TARGET unity)
+    add_library(unity STATIC
+        ${CMAKE_SOURCE_DIR}/tools/Unity/src/unity.c
+    )
+    target_include_directories(unity PUBLIC ${CMAKE_SOURCE_DIR}/tools/Unity/src)
+    target_compile_options(unity PRIVATE -Wall -g)
+endif()
+
+# ----------------------------
+# Tạo executable cho host tests
+# ----------------------------
+add_executable(host_tests
+    test_runner.c
+    # Thêm file test khác: test_temp_module.c, test_hal_mock.c, ...
+    # Có thể thêm mã nguồn cần kiểm thử (phiên bản không phụ thuộc hardware)
+    # ../src/M0_SysApp/temp_module.c
+)
+
+# Include paths
+target_include_directories(host_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/tools/Unity/src        # Unity headers
+    ${CMAKE_SOURCE_DIR}/src/M0_SysApp          # Headers từ app thực tế
+    ${CMAKE_CURRENT_SOURCE_DIR}                # Cho test files
+)
+
+# Link Unity library (static)
+target_link_libraries(host_tests PRIVATE unity)
+
+# Compiler options cho host (debug-friendly)
+target_compile_options(host_tests PRIVATE -Wall -Wextra -g -O0)
+
+# ----------------------------
+# Đăng ký test với CTest
+# ----------------------------
+enable_testing()
+add_test(NAME unit_tests COMMAND host_tests)
+
+# Set properties: Chạy với verbose output từ Unity
+set_tests_properties(unit_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# ----------------------------
+# Tạo target tiện lợi: run_native_test
+# ----------------------------
+add_custom_target(run_host_test
+  COMMAND host_tests
+  DEPENDS host_tests
+  COMMENT "Running host tests after build..."
+)

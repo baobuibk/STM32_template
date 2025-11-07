@@ -46,20 +46,20 @@
       }
     },
     {
-      "name": "test_native",
+      "name": "unit_test",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/host/test_native",
+      "binaryDir": "${sourceDir}/build/unit_test",
       "cacheVariables": {
         "BUILD_FIRMWARE": "OFF",
         "BUILD_HOST_TESTS": "ON",
-
+        "BUILD_NATIVE_TEST": "OFF",
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
 
         "CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/g++.exe",
         "CMAKE_ASM_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
-
+        "CMAKE_SH": "CMAKE_SH-NOTFOUND",
         "CMAKE_C_FLAGS": "-g -Wall -Wextra -O0",
         "CMAKE_CXX_FLAGS": "-g -Wall -Wextra -O0"
       }
@@ -69,6 +69,6 @@
   "buildPresets": [
     { "name": "Debug", "configurePreset": "Debug" },
     { "name": "Release", "configurePreset": "Release" },
-    { "name": "test_native", "configurePreset": "test_native" }
+    { "name": "unit_test", "configurePreset": "unit_test" }
   ]
 }

@@ -1,48 +1,46 @@
-# CMake cho tests (host-based, dùng GCC/Clang)
+# ==========================================
+# CMakeLists.txt trong thư mục test/
+# Là file cha quản lý cả host_test và native_test
+# ==========================================
 cmake_minimum_required(VERSION 3.20)
 
-if(CMAKE_CROSSCOMPILING)
-    set(CMAKE_C_COMPILER ${MINGW_PATH})
-    enable_language(C)
-    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    message(STATUS "Using host GCC: ${CMAKE_C_COMPILER}")
+# Bật hệ thống testing của CMake
+enable_testing()
+
+# ---- Tuỳ chọn điều khiển build ----
+option(BUILD_HOST_TEST "Build and run host-based tests (Unity + GCC)" ON)
+option(BUILD_NATIVE_TEST "Build and run native tests (for embedded/native simulation)" OFF)
+
+message(STATUS "=== Configuring test modules ===")
+message(STATUS "BUILD_HOST_TEST:   ${BUILD_HOST_TEST}")
+message(STATUS "BUILD_NATIVE_TEST: ${BUILD_NATIVE_TEST}")
+
+# ---- Thêm subdirectory tương ứng ----
+if(BUILD_HOST_TEST)
+    add_subdirectory(host_test)
 endif()
 
-# Build Unity như static library (nếu chưa có target 'unity')
-if(NOT TARGET unity)
-    add_library(unity STATIC
-        ${CMAKE_SOURCE_DIR}/tools/Unity/src/unity.c
+if(BUILD_NATIVE_TEST)
+    add_subdirectory(native_test)
+endif()
+
+# ---- Tổng hợp test targets tiện lợi ----
+# Nếu cả hai loại test đều tồn tại, ta tạo target tiện chạy chung
+if(TARGET host_tests OR TARGET native_tests)
+    add_custom_target(run_all_tests
+        COMMENT "Run all enabled tests"
     )
-    target_include_directories(unity PUBLIC ${CMAKE_SOURCE_DIR}/tools/Unity/src)
-    target_compile_options(unity PRIVATE -Wall -g)
+    if(TARGET host_tests)
+        add_dependencies(run_all_tests host_tests)
+        add_custom_command(TARGET run_all_tests POST_BUILD
+            COMMAND host_tests
+            COMMENT "Running host tests...")
+    endif()
+
+    if(TARGET native_tests)
+        add_dependencies(run_all_tests native_tests)
+        add_custom_command(TARGET run_all_tests POST_BUILD
+            COMMAND native_tests
+            COMMENT "Running native tests...")
+    endif()
 endif()
-
-# Tạo executable cho tests
-add_executable(tests
-    test_runner.c  # Main Unity runner (gọi RUN_TEST_GROUP)
-    # Thêm file test khác: test_temp_module.c, test_hal_mock.c, etc.
-    # Nếu cần source từ src: ../src/M0_SysApp/temp_module.c (không include hardware-dependent code)
-)
-
-# Include paths
-target_include_directories(tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/tools/Unity/src  # Unity headers
-    ${CMAKE_SOURCE_DIR}/src/M0_SysApp      # Headers từ app thực tế
-    ${CMAKE_CURRENT_SOURCE_DIR}            # Cho test files
-)
-
-# Link Unity library (static)
-target_link_libraries(tests PRIVATE unity)
-
-# Compiler options cho host (debug-friendly)
-target_compile_options(tests PRIVATE -Wall -Wextra -g -O0)
-
-# Đăng ký test với CTest
-add_test(NAME unit_tests COMMAND tests)
-
-# Set properties: Chạy với verbose output từ Unity
-set_tests_properties(unit_tests PROPERTIES
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
