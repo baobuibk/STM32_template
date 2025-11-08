@@ -14,8 +14,14 @@ endif()
 if(NOT TARGET unity)
     add_library(unity STATIC
         ${CMAKE_SOURCE_DIR}/tools/Unity/src/unity.c
+        ${CMAKE_SOURCE_DIR}/tools/Unity/extras/fixture/src/unity_fixture.c
+        ${CMAKE_SOURCE_DIR}/tools/Unity/extras/memory/src/unity_memory.c
     )
-    target_include_directories(unity PUBLIC ${CMAKE_SOURCE_DIR}/tools/Unity/src)
+    target_include_directories(unity PUBLIC 
+        ${CMAKE_SOURCE_DIR}/tools/Unity/src
+        ${CMAKE_SOURCE_DIR}/tools/Unity/extras/fixture/src # Unity Fixture headers
+        ${CMAKE_SOURCE_DIR}/tools/Unity/extras/memory/src/ # Unity Memory headers
+        )
     target_compile_options(unity PRIVATE -Wall -g)
 endif()
 
@@ -32,6 +38,8 @@ add_executable(host_tests
 # Include paths
 target_include_directories(host_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/tools/Unity/src        # Unity headers
+    ${CMAKE_SOURCE_DIR}/tools/Unity/extras/fixture/src # Unity Fixture headers
+    ${CMAKE_SOURCE_DIR}/tools/Unity/extras/memory/src/ # Unity Memory headers
     ${CMAKE_SOURCE_DIR}/src/M0_SysApp          # Headers từ app thực tế
     ${CMAKE_CURRENT_SOURCE_DIR}                # Cho test files
 )

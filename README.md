@@ -18,6 +18,7 @@ This template is used to create new STM32 project wth clang format, Cmake, ST-li
 * Clone the template.
 * Change the configuration in .vscode according to your machine
 * Create new STM32 project in the ide_gen folder if you dont want to use the current project
+* Install cmake, gcc, arm toolchain
 
 ### Executing program
 
