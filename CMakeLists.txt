@@ -40,7 +40,7 @@ set (PROJECT_TYPE             "exe")
 set(LINKER_SCRIPT             "${CMAKE_SOURCE_DIR}/ide_gen/STM32F746NGHX_FLASH.ld")
 set (MCPU                     "-mcpu=Cortex-M7")
 set (MFPU                     "-mfpu=fpv5-sp-d16")
-set (MFLOAT_ABI               "")
+set (MFLOAT_ABI               "-mfloat-abi=hard")
 set (RUNTIME_LIBRARY          "--specs=nano.specs")
 set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
@@ -77,6 +77,7 @@ if (${PROJECT_TYPE} MATCHES ${PROJECT_TYPE_EXECUTABLE})
   add_executable(${PROJECT_NAME})
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ide_gen )
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/M0_SysApp )
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/M4_MiddleWares )
 
 
   add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)

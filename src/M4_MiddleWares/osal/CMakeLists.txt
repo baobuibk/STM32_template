@@ -26,6 +26,16 @@ endif()
 
 # Platform configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${SYS_OS}.cmake)
+target_sources(${PROJECT_NAME} PRIVATE 
+  ${OSAL_SOURCES}
+  ${FREE_RTOS_SOURCES}
+)
+
+target_include_directories(${PROJECT_NAME}
+  PRIVATE
+    ${OSAL_INCLUDE}
+    ${FREE_RTOS_INCLUDE}
+)
 
 
 

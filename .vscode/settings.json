@@ -24,7 +24,8 @@
         "freertosconfig.h": "c",
         "main_app.h": "c",
         "main.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "osal_log.h": "c"
     }, // Hiển thị log chi tiết OpenOCD
 
 "terminal.integrated.profiles.windows": {

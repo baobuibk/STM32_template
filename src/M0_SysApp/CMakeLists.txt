@@ -9,6 +9,7 @@ set(INCLUDE_PATHS
 
 set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/App/Src/main_app.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/App/Src/free_rtos_hooks.c
 )
 
 # 2) GẮN VÀO TARGET ĐỂ BIÊN DỊCH
