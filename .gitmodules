@@ -1,3 +1,6 @@
 [submodule "tools/Unity"]
 	path = tools/Unity
 	url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "external/freeRTOS"]
+	path = external/freeRTOS
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git

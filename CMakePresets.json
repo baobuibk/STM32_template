@@ -5,7 +5,7 @@
       "name": "Debug",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/Debug",
-      "toolchainFile": "${sourceDir}/cmake/gnu-tools-for-stm32.cmake",
+      "toolchainFile": "${sourceDir}/cmake/cubeide-gcc.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -20,14 +20,17 @@
         "CMSIS_Dmpu": "MPU",
         "CMSIS_Dendian": "Little-endian",
         "CMSIS_Dsecure": "",
-        "CMSIS_Tcompiler": "GCC"
+        "CMSIS_Tcompiler": "GCC",
+        "BUILD_FIRMWARE": "ON",
+        "BUILD_HOST_TESTS": "OFF",
+        "SYS_OS": "FREERTOS"
       }
     },
     {
       "name": "Release",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/Release",
-      "toolchainFile": "${sourceDir}/cmake/gnu-tools-for-stm32.cmake",
+      "toolchainFile": "${sourceDir}/cmake/cubeide-gcc.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -42,7 +45,10 @@
         "CMSIS_Dmpu": "MPU",
         "CMSIS_Dendian": "Little-endian",
         "CMSIS_Dsecure": "",
-        "CMSIS_Tcompiler": "GCC"
+        "CMSIS_Tcompiler": "GCC",
+        "BUILD_FIRMWARE": "ON",
+        "BUILD_HOST_TESTS": "OFF",
+        "SYS_OS": "FREERTOS"
       }
     },
     {
@@ -61,7 +67,8 @@
         "CMAKE_ASM_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
         "CMAKE_SH": "CMAKE_SH-NOTFOUND",
         "CMAKE_C_FLAGS": "-g -Wall -Wextra -O0",
-        "CMAKE_CXX_FLAGS": "-g -Wall -Wextra -O0"
+        "CMAKE_CXX_FLAGS": "-g -Wall -Wextra -O0",
+        "SYS_OS": "LINUX"
       }
     }
 

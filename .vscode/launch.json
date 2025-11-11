@@ -7,7 +7,7 @@
       "request": "launch",
       "servertype": "openocd",
       "cwd": "${workspaceFolder}",
-      "executable": "${workspaceFolder}/build/Debug/firmware.elf",   // đổi đúng tên/đường dẫn .elf của preset Debug
+      "executable": "${workspaceFolder}/build/Debug/STM32_Cmake.elf",   // đổi đúng tên/đường dẫn .elf của preset Debug
       "device": "STM32H743ZI",                                   // ĐỔI ĐÚNG part của bạn
       "configFiles": [
         "${workspaceFolder}/openocd_f7.cfg"

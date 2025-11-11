@@ -19,7 +19,12 @@
         "stdio.h": "c",
         "unity.h": "c",
         "unity_config.h": "c",
-        "productioncode.h": "c"
+        "productioncode.h": "c",
+        "configs.h": "c",
+        "freertosconfig.h": "c",
+        "main_app.h": "c",
+        "main.h": "c",
+        "stdint.h": "c"
     }, // Hiển thị log chi tiết OpenOCD
 
 "terminal.integrated.profiles.windows": {

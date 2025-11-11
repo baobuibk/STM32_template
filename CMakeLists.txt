@@ -1,74 +1,94 @@
+#############################################################################################################################
+# file:  CMakeLists.txt
+# brief: Template "CMakeLists.txt" for building of executables and static libraries.
+#
+# usage: Edit "VARIABLES"-section to suit project requirements.
+#        For debug build:
+#          cmake -DCMAKE_TOOLCHAIN_FILE=cubeide-gcc.cmake  -S ./ -B Debug -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug
+#          make -C Debug VERBOSE=1 -j
+#        For release build:
+#          cmake -DCMAKE_TOOLCHAIN_FILE=cubeide-gcc.cmake  -S ./ -B Release -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+#          make -C Release VERBOSE=1 -j
+#############################################################################################################################
 cmake_minimum_required(VERSION 3.20)
 
-project(MySTM32App LANGUAGES C ASM)
+###################### CONSTANTS ######################################
+set (PROJECT_TYPE_EXECUTABLE          "exe")
+set (PROJECT_TYPE_STATIC_LIBRARY      "static-lib")
+set (MCPU_CORTEX_M0				      "-mcpu=cortex-m0")
+set (MCPU_CORTEX_M0PLUS				  "-mcpu=cortex-m0plus")
+set (MCPU_CORTEX_M3				      "-mcpu=cortex-m3")
+set (MCPU_CORTEX_M4				      "-mcpu=cortex-m4")
+set (MCPU_CORTEX_M7				      "-mcpu=cortex-m7")
+set (MCPU_CORTEX_M33				  "-mcpu=cortex-m33")
+set (MCPU_CORTEX_M55				  "-mcpu=cortex-m55")
+set (MCPU_CORTEX_M85				  "-mcpu=cortex-m85")
+set (MFPU_FPV4_SP_D16                 "-mfpu=fpv4-sp-d16")
+set (MFPU_FPV5_D16                    "-mfpu=fpv5-d16")
+set (RUNTIME_LIBRARY_REDUCED_C        "--specs=nano.specs")
+set (RUNTIME_LIBRARY_STD_C            "")
+set (RUNTIME_LIBRARY_SYSCALLS_MINIMAL "--specs=nosys.specs")
+set (RUNTIME_LIBRARY_SYSCALLS_NONE    "")
+set (MFLOAT_ABI_SOFTWARE              "-mfloat-abi=soft")
+set (MFLOAT_ABI_HARDWARE              "-mfloat-abi=hard")
+set (MFLOAT_ABI_MIX                   "-mfloat-abi=softfp")
+#######################################################################
 
-# ===========================
-# Build options (2 đường build tách bạch)
-# ===========================
-option(BUILD_FIRMWARE     "Build STM32 firmware (ARM)" ON)
-option(BUILD_HOST_TESTS   "Build host-side unit tests (native)" OFF)
+###################### VARIABLES ######################################
+set (PROJECT_NAME             "STM32_Cmake")
+set (PROJECT_TYPE             "exe")
+set(LINKER_SCRIPT             "${CMAKE_SOURCE_DIR}/ide_gen/STM32F746NGHX_FLASH.ld")
+set (MCPU                     "-mcpu=Cortex-M7")
+set (MFPU                     "-mfpu=fpv5-sp-d16")
+set (MFLOAT_ABI               "")
+set (RUNTIME_LIBRARY          "--specs=nano.specs")
+set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
-# Tên target firmware (do ide_gen tạo ra)
-set(FW_TARGET firmware CACHE STRING "Firmware target name")
+set(CMAKE_C_STANDARD 11)
 
-# ===========================
-# Firmware (ARM) - chỉ thêm khi BUILD_FIRMWARE=ON
-# ===========================
-if(BUILD_FIRMWARE)
-  # Tạo target + cấu hình toolchain/linker ở ide_gen
-  add_subdirectory(ide_gen)
+set (PROJECT_SOURCES
+	# LIST SOURCE FILES HERE
+    # ide_gen/Core/Src/main.c
+	)
+# chọn MCU theo đúng startup/device bạn dùng
+set(MCU STM32F746xx)
 
-  # Bơm mã nguồn ứng dụng vào target đã tạo (cung cấp M0_SYSAPP_SOURCES/HEADERS)
-  add_subdirectory(src/M0_SysApp)
-endif()
+set (PROJECT_DEFINES
+	# LIST COMPILER DEFINITIONS HERE
+   ${MCU}
 
-# ===========================
-# Clang-format (chỉ chạy khi có nguồn M0_SysApp)
-# ===========================
-if(BUILD_FIRMWARE)
-  # Đường dẫn đến file .clang-format
-  set(CLANG_FORMAT_FILE "${CMAKE_SOURCE_DIR}/tools/.clang-format")
 
-  # Gom file để format (chỉ khi các biến đã được định nghĩa từ src/M0_SysApp)
-  if(DEFINED M0_SYSAPP_SOURCES OR DEFINED M0_SYSAPP_HEADERS)
-    set(FORMAT_SOURCES
-        ${M0_SYSAPP_SOURCES}
-        ${M0_SYSAPP_HEADERS}
     )
 
-    if(NOT FORMAT_SOURCES)
-      message(WARNING "No files found in SOURCES or HEADERS for formatting")
-    else()
-      # Tìm clang-format
-      find_program(CLANG_FORMAT NAMES clang-format REQUIRED)
+set (PROJECT_INCLUDES
+	# LIST INCLUDE DIRECTORIES HERE
 
-      # Tạo script để chạy lần lượt (ổn định cả Windows & Linux)
-      set(FORMAT_SCRIPT "${CMAKE_BINARY_DIR}/cmake/format_m0_sysapp.cmake")
-      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/cmake")
+    )
 
-      file(WRITE "${FORMAT_SCRIPT}" "message(STATUS \"Formatting M0_SysApp using ${CLANG_FORMAT_FILE}\")\n")
-      foreach(_f IN LISTS FORMAT_SOURCES)
-        # In ra tên file đang format
-        file(APPEND "${FORMAT_SCRIPT}" "message(STATUS \"Formatting file: ${_f}\")\n")
-        # Gọi clang-format cho file đó
-        file(APPEND "${FORMAT_SCRIPT}" "execute_process(COMMAND \"${CLANG_FORMAT}\" -i --style=file:${CLANG_FORMAT_FILE} \"${_f}\")\n")
-      endforeach()
+############ MODIFY ACCORDING TO REQUIREMENTS) ########################
 
-      # Tạo target format
-      add_custom_target(clang_format
-        COMMAND "${CMAKE_COMMAND}" -P "${FORMAT_SCRIPT}"
-        COMMENT "Running clang-format on M0_SysApp"
-      )
-    endif()
-  else()
-    message(STATUS "M0_SysApp sources not available at configure time; skip clang_format target.")
-  endif()
+#######################################################################
+
+################## PROJECT SETUP ######################################
+project(${PROJECT_NAME})
+enable_language(C ASM)
+
+if (${PROJECT_TYPE} MATCHES ${PROJECT_TYPE_EXECUTABLE})
+  add_executable(${PROJECT_NAME})
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ide_gen )
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/M0_SysApp )
+
+
+  add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
+elseif (${PROJECT_TYPE} MATCHES ${PROJECT_TYPE_STATIC_LIBRARY})
+  add_library(${PROJECT_NAME} ${PROJECT_SOURCES})
 endif()
 
-# ===========================
-# Host tests (native) - chỉ thêm khi BUILD_HOST_TESTS=ON
-# ===========================
-if(BUILD_HOST_TESTS)
-  enable_testing()
-  add_subdirectory(test)   # Thư mục test của bạn (KHÔNG được dùng flag ARM trong đó)
-endif()
+add_compile_definitions(${PROJECT_DEFINES})
+include_directories (${PROJECT_INCLUDES})
+
+set (CMAKE_EXECUTABLE_SUFFIX ".elf")
+set (CMAKE_STATIC_LIBRARY_SUFFIX ".a")
+set (CMAKE_C_FLAGS "${MCPU} -std=gnu11 ${MFPU} ${MFLOAT_ABI} ${RUNTIME_LIBRARY} -mthumb -Wall -Werror")
+set (CMAKE_EXE_LINKER_FLAGS "-T${LINKER_SCRIPT} ${RUNTIME_LIBRARY_SYSCALLS} -Wl,-Map=test.map -Wl,--gc-sections -static -Wl,--start-group -lc -lm -Wl,--end-group")
+set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
