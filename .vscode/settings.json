@@ -25,7 +25,10 @@
         "main_app.h": "c",
         "main.h": "c",
         "stdint.h": "c",
-        "osal_log.h": "c"
+        "osal_log.h": "c",
+        "ring_buffer.h": "c",
+        "string.h": "c",
+        "stddef.h": "c"
     }, // Hiển thị log chi tiết OpenOCD
 
 "terminal.integrated.profiles.windows": {

@@ -255,3 +255,12 @@ void os_timer_destroy (os_timer_t * timer)
    CC_ASSERT (status == pdPASS);
    free (timer);
 }
+
+void os_crit_enter(void)
+{
+   taskENTER_CRITICAL();
+}
+void os_crit_exit(void)
+{
+   taskEXIT_CRITICAL();
+}

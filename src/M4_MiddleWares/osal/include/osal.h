@@ -132,6 +132,9 @@ void os_timer_start (os_timer_t * timer);
 void os_timer_stop (os_timer_t * timer);
 void os_timer_destroy (os_timer_t * timer);
 
+void os_crit_enter(void);
+void os_crit_exit(void);
+
 #ifdef __cplusplus
 }
 #endif

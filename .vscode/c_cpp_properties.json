@@ -34,6 +34,7 @@
       "intelliSenseMode": "gcc-arm",
       "cStandard": "c17",
       "cppStandard": "c++14",
+      "compilerPath": "C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc.exe",
       "includePath": [
                 "${default}",
                 "${workspaceFolder}/**",
