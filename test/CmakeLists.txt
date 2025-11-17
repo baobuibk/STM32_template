@@ -26,21 +26,21 @@ endif()
 
 # ---- Tổng hợp test targets tiện lợi ----
 # Nếu cả hai loại test đều tồn tại, ta tạo target tiện chạy chung
-if(TARGET host_tests OR TARGET native_tests)
-    add_custom_target(run_all_tests
-        COMMENT "Run all enabled tests"
-    )
-    if(TARGET host_tests)
-        add_dependencies(run_all_tests host_tests)
-        add_custom_command(TARGET run_all_tests POST_BUILD
-            COMMAND host_tests
-            COMMENT "Running host tests...")
-    endif()
+# if(TARGET host_tests OR TARGET native_tests)
+#     add_custom_target(run_all_tests
+#         COMMENT "Run all enabled tests"
+#     )
+#     if(TARGET host_tests)
+#         add_dependencies(run_all_tests host_tests)
+#         add_custom_command(TARGET run_all_tests POST_BUILD
+#             COMMAND host_tests
+#             COMMENT "Running host tests...")
+#     endif()
 
-    if(TARGET native_tests)
-        add_dependencies(run_all_tests native_tests)
-        add_custom_command(TARGET run_all_tests POST_BUILD
-            COMMAND native_tests
-            COMMENT "Running native tests...")
-    endif()
-endif()
+#     if(TARGET native_tests)
+#         add_dependencies(run_all_tests native_tests)
+#         add_custom_command(TARGET run_all_tests POST_BUILD
+#             COMMAND native_tests
+#             COMMENT "Running native tests...")
+#     endif()
+# endif()

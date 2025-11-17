@@ -68,7 +68,7 @@
         "CMAKE_SH": "CMAKE_SH-NOTFOUND",
         "CMAKE_C_FLAGS": "-g -Wall -Wextra -O0",
         "CMAKE_CXX_FLAGS": "-g -Wall -Wextra -O0",
-        "SYS_OS": "LINUX"
+        "SYS_OS": "WINDOWS"
       }
     }
 

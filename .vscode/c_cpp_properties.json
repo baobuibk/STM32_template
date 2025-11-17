@@ -1,26 +1,3 @@
-// {
-//     "configurations": [
-//         {
-//             "name": "STM32",
-//             "includePath": [
-//                 "${default}",
-//                 "${workspaceFolder}/**",
-//                 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/arm-none-eabi/include"
-//                 ],
-//             "defines": [
-//                 "_DEBUG",
-//                 "UNICODE",
-//                 "_UNICODE"
-//             ],
-//             "cStandard": "c17",
-//             "cppStandard": "c++14",
-//             "intelliSenseMode": "windows-clang-x64",
-//             "compilerPath": "C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc.exe"
-//         }
-//     ],
-//     "version": 4
-// }
-
 {
   "version": 4,
   "configurations": [
@@ -38,6 +15,8 @@
       "includePath": [
                 "${default}",
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/external/FreeRTOS/Source/include",
+                "${workspaceFolder}/external/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1",
                 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.3 rel1/arm-none-eabi/include"
                 ]
     }

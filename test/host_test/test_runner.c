@@ -6,7 +6,7 @@
 #include "unity_internals.h"
 
 TEST_GROUP(SprintfTests);  // Group name to avoid collision with stdio's 'sprintf'
-
+TEST_GROUP_RUNNER(Test_Sysapp);    // thêm dòng này
 
 
 static char output[100];
@@ -57,6 +57,7 @@ TEST_GROUP_RUNNER(SprintfTests) {
 // Wrapper to run all test groups (add more RUN_TEST_GROUP calls for additional groups)
 void RunAllTests(void) {
     RUN_TEST_GROUP(SprintfTests);  // Fixed: Use RUN_TEST_GROUP, not RUN_GROUP_RUNNER
+    RUN_TEST_GROUP(Test_Sysapp);    // thêm nhóm test sysapp
 }
 
 int main(int argc, const char *argv[]) {  // argv as const char *argv[]

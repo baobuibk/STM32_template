@@ -28,7 +28,11 @@
         "osal_log.h": "c",
         "ring_buffer.h": "c",
         "string.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "osal.h": "c",
+        "error_codes.h": "c",
+        "osal_sys.h": "c",
+        "freertos.h": "c"
     }, // Hiển thị log chi tiết OpenOCD
 
 "terminal.integrated.profiles.windows": {

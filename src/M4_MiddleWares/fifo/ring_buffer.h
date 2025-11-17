@@ -1,55 +1,53 @@
-#ifndef _RING_BUFFER_H_
-#define _RING_BUFFER_H_
+#ifndef RING_BUFFER_H
+#define RING_BUFFER_H
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include "osal.h"
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* Cấu trúc Ring Char Buffer */
-typedef struct _ring_buffer_t_
+/* Mã lỗi mặc định (bỏ nếu bạn đã có nơi khác) */
+#ifndef ERROR_OK
+#define ERROR_OK                    (0u)
+#endif
+#ifndef ERROR_INVALID_PARAM
+#define ERROR_INVALID_PARAM         (1u)
+#endif
+#ifndef ERROR_OUT_OF_MEMORY
+#define ERROR_OUT_OF_MEMORY         (2u)
+#endif
+#ifndef ERROR_BUFFER_EMPTY
+#define ERROR_BUFFER_EMPTY          (3u)
+#endif
+#ifndef ERROR_BUFFER_FULL
+#define ERROR_BUFFER_FULL           (4u)
+#endif
+
+typedef struct
 {
-    uint8_t *buffer;    /* Con trỏ đến mảng tĩnh do người dùng cung cấp */
-    uint32_t buffer_size; /* Kích thước của mảng tĩnh (byte) */
-
-    uint32_t item_size;  /* Kích thước của mỗi phần tử (byte) */
-    uint32_t max_items;  /* Số lượng phần tử tối đa */
-
-    volatile uint32_t head;      /* Vị trí đầu (để thêm phần tử) */
-    volatile uint32_t tail;      /* Vị trí đuôi (để lấy phần tử) */
+    volatile uint32_t head;
+    volatile uint32_t tail;
+    uint32_t          max_items;
+    uint32_t          item_size;   /* kích thước 1 phần tử */
+    uint8_t          *buffer;      /* con trỏ tới vùng đệm thô */
+    uint32_t          buffer_size; /* tổng bytes của buffer */
 } ring_buffer_t;
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* Khởi tạo bộ đệm, yêu cầu người dùng cung cấp con trỏ đến mảng tĩnh */
-uint32_t ring_buffer_init(ring_buffer_t* const me, uint8_t *static_buffer, uint32_t buffer_size, uint32_t max_items, uint32_t item_size);
+/* API */
+uint32_t ring_buffer_init  (ring_buffer_t *me,
+                            void *buffer,
+                            uint32_t buffer_size,
+                            uint32_t max_items,
+                            uint32_t item_size);
+uint32_t ring_buffer_reset (ring_buffer_t *me);
 
-/* Đưa một phần tử vào bộ đệm */
-uint32_t ring_buffer_push(ring_buffer_t* const me, void const * const item);
+uint32_t ring_buffer_put   (ring_buffer_t *me, const void *item);
+uint32_t ring_buffer_get   (ring_buffer_t *me, void *out_item);
+uint32_t ring_buffer_peek  (ring_buffer_t *me, void *out_item);
 
-/* Lấy một phần tử ra khỏi bộ đệm */
-uint32_t ring_buffer_pop(ring_buffer_t* const me, void * item);
+uint32_t ring_buffer_is_empty(ring_buffer_t *me, bool *out_empty);
+uint32_t ring_buffer_is_full (ring_buffer_t *me, bool *out_full);
+uint32_t ring_buffer_get_count(ring_buffer_t *me, uint32_t *out_count);
+uint32_t ring_buffer_get_free (ring_buffer_t *me, uint32_t *out_free);
 
-/* Ghi đề một phần tử vào bộ đệm mà không tăng index */
-uint32_t ring_buffer_overwrite(ring_buffer_t* const me, void const * const item);
-
-/* Đọc giá trị của phần tử hiện tại mà không tăng index */
-uint32_t ring_buffer_peak(ring_buffer_t* const me, void * item);
-
-/* Kiểm tra bộ đệm rỗng */
-uint32_t ring_buffer_is_empty(ring_buffer_t* const me);
-
-/* Kiểm tra bộ đệm đầy */
-uint32_t ring_buffer_is_full(ring_buffer_t* const me);
-
-/* Lấy số lượng phần tử hiện tại trong bộ đệm */
-uint32_t ring_buffer_get_buffer_count(ring_buffer_t* const me);
-
-/* Lấy số lượng phần tử còn trống trong bộ đệm */
-uint32_t ring_buffer_get_free_space(ring_buffer_t* const me);
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#endif /* _RING_BUFFER_H_ */
+#endif /* RING_BUFFER_H */

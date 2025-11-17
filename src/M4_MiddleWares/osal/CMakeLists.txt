@@ -18,24 +18,11 @@ target_compile_options (osal
   )
 endif()
 
-# Use position independent code if platform supports shared libraries
-get_property(SUPPORTS_SHARED GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
-if (SUPPORTS_SHARED)
-  set_property(TARGET osal PROPERTY POSITION_INDEPENDENT_CODE ON)
-endif()
+
 
 # Platform configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${SYS_OS}.cmake)
-target_sources(${PROJECT_NAME} PRIVATE 
-  ${OSAL_SOURCES}
-  ${FREE_RTOS_SOURCES}
-)
 
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
-    ${OSAL_INCLUDE}
-    ${FREE_RTOS_INCLUDE}
-)
 
 
 

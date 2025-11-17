@@ -32,3 +32,13 @@ set(FREE_RTOS_INCLUDE
   ${CMAKE_SOURCE_DIR}/src/M0_SysApp/Config          # nơi có FreeRTOSConfig.h
 )
 
+target_sources(${PROJECT_NAME} PRIVATE 
+  ${OSAL_SOURCES}
+  ${FREE_RTOS_SOURCES}
+)
+
+target_include_directories(${PROJECT_NAME}
+  PRIVATE
+    ${OSAL_INCLUDE}
+    ${FREE_RTOS_INCLUDE}
+)

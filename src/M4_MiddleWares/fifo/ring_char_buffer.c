@@ -1,297 +1,136 @@
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Include~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#include "ring_char_buffer.h"
 #include <string.h>
 
-#include "ring_char_buffer.h"
-
-/* Dependency includes. */
-#include "error_codes.h"
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static void ring_char_buffer_advance_index(volatile uint32_t* p_index, uint32_t max_items);
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* Khởi tạo bộ đệm */
-uint32_t ring_char_buffer_init(ring_char_buffer_t * const me, uint8_t *static_buffer,  uint32_t max_items)
+static inline uint32_t next_idx(uint32_t cur, uint32_t max_items)
 {
-    if (me == NULL || static_buffer == NULL || max_items == 0 )
-    {
-        return ERROR_INVALID_PARAM;
-    }
+    return (cur + 1u) % max_items;
+}
 
-    me->buffer      = static_buffer;
-    me->max_items   = max_items;
-    me->head        = 0;
-    me->tail        = 0;
-
+uint32_t ring_char_buffer_init(ring_char_buffer_t *me,
+                               uint8_t *buffer,
+                               uint32_t max_items)
+{
+    if (!me || !buffer || max_items < 2u) return ERROR_INVALID_PARAM;
+    me->head = 0u;
+    me->tail = 0u;
+    me->max_items = max_items;
+    me->buffer = buffer;
     return ERROR_OK;
 }
 
-/* Đưa một phần tử vào bộ đệm */
-uint32_t ring_char_buffer_push(ring_char_buffer_t * const me, uint8_t const item)
+uint32_t ring_char_buffer_reset(ring_char_buffer_t *me)
 {
-    uint32_t result ;
-
-	if (me == NULL )
-    {
-        result = ERROR_INVALID_PARAM;
-    }
-    else if (ring_char_buffer_is_full(me))
-    {
-        result = ERROR_BUFFER_FULL;
-    }
-	else
-	{
-		/* Tính vị trí trong bộ đệm */
-		me->buffer[me->head] = item;
-
-        /* Cập nhật head và count */
-        ring_char_buffer_advance_index(&me->head, me->max_items);
-
-		result = ERROR_OK;
-	}
-
-    return result;
+    if (!me) return ERROR_INVALID_PARAM;
+    os_crit_enter();
+    me->head = me->tail = 0u;
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* Lấy một phần tử ra khỏi bộ đệm */
-uint32_t ring_char_buffer_pop(ring_char_buffer_t * const me, uint8_t * const item)
+uint32_t ring_char_buffer_put(ring_char_buffer_t *me, uint8_t item)
 {
-    uint32_t result ;
+    if (!me || !me->buffer || me->max_items < 2u) return ERROR_INVALID_PARAM;
 
-	if (me == NULL || item == NULL )
+    os_crit_enter();
+    uint32_t h = me->head;
+    uint32_t t = me->tail;
+    if (next_idx(h, me->max_items) == t)
     {
-	    result = ERROR_INVALID_PARAM;
+        os_crit_exit();
+        return ERROR_BUFFER_FULL;
     }
-    else if (ring_char_buffer_is_empty(me))
-    {
-        result = ERROR_BUFFER_EMPTY;
-    }
-	else
-	{
-		*item = me->buffer[me->tail];
-
-		/* Cập nhật tail và count */
-        ring_char_buffer_advance_index(&me->tail, me->max_items);
-
-		result = ERROR_OK;
-	}
-
-    return result;
+    me->buffer[h] = item;
+    me->head = next_idx(h, me->max_items);
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* Ghi đề một phần tử vào bộ đệm mà không tăng index */
-uint32_t ring_char_buffer_overwrite(ring_char_buffer_t * const me, uint8_t const item)
+uint32_t ring_char_buffer_overwrite(ring_char_buffer_t *me, uint8_t item)
 {
-    uint32_t result ;
+    if (!me || !me->buffer || me->max_items < 2u) return ERROR_INVALID_PARAM;
 
-	if (me == NULL )
+    os_crit_enter();
+    uint32_t h = me->head;
+    uint32_t t = me->tail;
+
+    /* nếu đầy, đẩy tail */
+    if (next_idx(h, me->max_items) == t)
     {
-        result = ERROR_INVALID_PARAM;
+        me->tail = next_idx(t, me->max_items);
     }
-	else
-	{
-		/* Tính vị trí trong bộ đệm */
-		me->buffer[me->head] = item;
-
-		result = ERROR_OK;
-	}
-
-    return result;
+    me->buffer[h] = item;
+    me->head = next_idx(h, me->max_items);
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* Đọc giá trị của phần tử hiện tại mà không tăng index */
-uint32_t ring_char_buffer_peak(ring_char_buffer_t * const me, uint8_t * const item)
+uint32_t ring_char_buffer_get(ring_char_buffer_t *me, uint8_t *out_item)
 {
-    uint32_t result ;
+    if (!me || !out_item) return ERROR_INVALID_PARAM;
 
-	if (me == NULL )
+    os_crit_enter();
+    if (me->head == me->tail)
     {
-        result = ERROR_INVALID_PARAM;
+        os_crit_exit();
+        return ERROR_BUFFER_EMPTY;
     }
-	else
-	{
-		/* Tính vị trí trong bộ đệm */
-		*item = me->buffer[me->tail];
-
-		result = ERROR_OK;
-	}
-
-    return result;
+    *out_item = me->buffer[me->tail];
+    me->tail = next_idx(me->tail, me->max_items);
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* Kiểm tra bộ đệm rỗng */
-bool ring_char_buffer_is_empty(ring_char_buffer_t * const me)
+uint32_t ring_char_buffer_peek(ring_char_buffer_t *me, uint8_t *out_item)
 {
-    if (me == NULL)
+    if (!me || !out_item) return ERROR_INVALID_PARAM;
+
+    os_crit_enter();
+    if (me->head == me->tail)
     {
-        return true;
+        os_crit_exit();
+        return ERROR_BUFFER_EMPTY;
     }
-
-    uint32_t head = me->head;
-    uint32_t tail = me->tail;
-
-    return ((head == tail) ? 1 : 0);
+    *out_item = me->buffer[me->tail];
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* Kiểm tra bộ đệm đầy */
-bool ring_char_buffer_is_full(ring_char_buffer_t * const me)
+uint32_t ring_char_buffer_is_empty(ring_char_buffer_t *me, bool *out_empty)
 {
-    if (me == NULL)
-    {
-        return true;
-    }
-
-    uint32_t head       = me->head;
-    uint32_t tail       = me->tail;
-    uint32_t max_item   = me->max_items;
-
-    return((((head + 1) % max_item) == tail) ? 1 : 0);
+    if (!me || !out_empty) return ERROR_INVALID_PARAM;
+    os_crit_enter();
+    *out_empty = (me->head == me->tail);
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-uint32_t ring_char_buffer_get_buffer_count(ring_char_buffer_t const * const me)
+uint32_t ring_char_buffer_is_full(ring_char_buffer_t *me, bool *out_full)
 {
-    if (me == NULL)
-    {
-        return true;
-    }
-
-    uint32_t head       = me->head;
-    uint32_t tail       = me->tail;
-    uint32_t max_item   = me->max_items;
-
-    return((head >= tail) ? (head - tail) : (max_item - (tail - head)));
+    if (!me || !out_full) return ERROR_INVALID_PARAM;
+    os_crit_enter();
+    *out_full = (next_idx(me->head, me->max_items) == me->tail);
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-uint32_t ring_char_buffer_get_free_space(ring_char_buffer_t const * const me)
-{ 
-    if (me == NULL)
-    {
-        return 0; // Return 0 if the buffer is not initialized
-    }
-
-    uint32_t count      = ring_char_buffer_get_buffer_count(me);
-    uint32_t max_item   = me->max_items;
-
-    // Calculate the number of free bytes in the ring buffer
-    return max_item - count; 
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static void ring_char_buffer_advance_index(volatile uint32_t* p_index, uint32_t max_items)
+uint32_t ring_char_buffer_get_count(ring_char_buffer_t *me, uint32_t *out_count)
 {
-    *p_index = (*p_index + 1) % max_items;
+    if (!me || !out_count) return ERROR_INVALID_PARAM;
+    os_crit_enter();
+    uint32_t h = me->head, t = me->tail, m = me->max_items;
+    *out_count = (h >= t) ? (h - t) : (m - (t - h));
+    os_crit_exit();
+    return ERROR_OK;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-// /* Khởi tạo bộ đệm */
-// uint32_t ring_buffer_init(ring_buffer_t * const me, uint8_t *static_buffer, uint32_t buffer_size, uint32_t max_items, uint32_t item_size)
-// {
-//     if (me == NULL || static_buffer == NULL || max_items == 0 || item_size == 0 || buffer_size == 0)
-//     {
-//         return ERROR_INVALID_PARAM;
-//     }
-
-//     /* Kiểm tra xem bộ đệm tĩnh có đủ kích thước không */
-//     if (max_items * item_size > buffer_size)
-//     {
-//         return ERROR_OUT_OF_MEMORY;
-//     }
-
-//     me->buffer      = static_buffer;
-//     me->buffer_size = buffer_size;
-//     me->item_size   = item_size;
-//     me->max_items   = max_items;
-//     me->head        = 0;
-//     me->tail        = 0;
-//     me->count       = 0;
-
-//     return ERROR_OK;
-// }
-
-// /* Đưa một phần tử vào bộ đệm */
-// uint32_t ring_buffer_push(ring_buffer_t * const me, void const * const item)
-// {
-//     uint32_t result;
-
-// 	if (me == NULL || item == NULL )
-//     {
-//         result = ERROR_INVALID_PARAM;
-//     }
-//     else if (ring_buffer_is_full(me))
-//     {
-//         result = ERROR_BUFFER_FULL;
-//     }
-// 	else
-// 	{
-// 		/* Tính vị trí trong bộ đệm */
-// 		uint8_t *dest = me->buffer + (me->head * me->item_size);
-// 		memcpy(dest, item, me->item_size);
-
-// 		/* Cập nhật head và count */
-// 		me->head = (me->head + 1) % me->max_items;
-// 		me->count++;
-// 		result = ERROR_OK;
-
-// 	}
-//     return result;
-// }
-
-// /* Lấy một phần tử ra khỏi bộ đệm */
-// uint32_t ring_buffer_pop(ring_buffer_t * const me, void * item)
-// {
-//     uint32_t result;
-
-// 	if (me == NULL || item == NULL )
-//     {
-// 		result = ERROR_INVALID_PARAM;
-//     }
-//     else if (ring_buffer_is_empty(me))
-//     {
-//         result = ERROR_BUFFER_EMPTY;
-//     }
-// 	else
-// 	{
-
-// 		/* Tính vị trí trong bộ đệm */
-// 		uint8_t *src = me->buffer + (me->tail * me->item_size);
-// 		uint8_t *des = (uint8_t *)item;
-// 		memcpy(des, src, me->item_size);
-
-
-// 		/* Cập nhật tail và count */
-// 		me->tail = (me->tail + 1) % me->max_items;
-// 		me->count--;
-
-// 		result = ERROR_OK;
-// 	}
-//     return result;
-// }
-
-// /* Kiểm tra bộ đệm rỗng */
-// bool ring_buffer_is_empty(ring_buffer_t * const me)
-// {
-//     if (me == NULL)
-//     {
-//         return true;
-//     }
-//     return me->count == 0;
-// }
-
-// /* Kiểm tra bộ đệm đầy */
-// bool ring_buffer_is_full(ring_buffer_t * const me)
-// {
-//     if (me == NULL)
-//     {
-//         return true;
-//     }
-//     return me->count == me->max_items;
-// }
+uint32_t ring_char_buffer_get_free(ring_char_buffer_t *me, uint32_t *out_free)
+{
+    if (!me || !out_free) return ERROR_INVALID_PARAM;
+    os_crit_enter();
+    uint32_t h = me->head, t = me->tail, m = me->max_items;
+    /* one slot is reserved to distinguish full vs empty */
+    uint32_t used = (h >= t) ? (h - t) : (m - (t - h));
+    *out_free = (m - 1u) - used;
+    os_crit_exit();
+    return ERROR_OK;
+}
